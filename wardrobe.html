@@ -79,6 +79,17 @@
     display: flex;
     gap: 8px;
   }
+  .profile-row {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 10px 16px 0;
+    display: flex;
+    gap: 8px;
+  }
+  .profile-switch {
+    display: flex;
+    gap: 8px;
+  }
   .tab {
     border: 1px solid var(--line);
     background: var(--card);
@@ -383,11 +394,17 @@
 <header>
   <div class="header-row">
     <div>
-      <h1>My Closet</h1>
+      <h1 id="closetTitle">My Closet</h1>
       <div class="sub" id="itemCount">0 items</div>
     </div>
     <div class="spacer"></div>
     <button class="btn primary" id="uploadBtn" type="button">+ Add photo</button>
+  </div>
+  <div class="profile-row">
+    <div class="profile-switch" role="group" aria-label="Whose closet">
+      <button class="tab active" id="profMe" type="button">My closet</button>
+      <button class="tab" id="profWife" type="button">Wife's closet</button>
+    </div>
   </div>
 </header>
 
@@ -484,6 +501,11 @@
   var DB_NAME = "wardrobe-db";
   var STORE = "items";
 
+  var profile = "me";            // "me" | "wife" — each profile has its own closet + outfit
+  function outfitKey() { return OUTFIT_KEY + "-" + profile; }
+  function closetTitle() { return profile === "wife" ? "Wife's Closet" : "My Closet"; }
+  function closetPronoun() { return profile === "wife" ? "her" : "your"; }
+
   var items = [];            // [{id, name, category, createdAt}]  (blobs kept in DB)
   var urlCache = {};         // id -> object URL
   var outfit = {};           // slotKey -> item id or null
@@ -565,7 +587,7 @@
     outfit = {};
     SLOTS.forEach(function (s) { outfit[s.key] = null; });
     try {
-      var raw = localStorage.getItem(OUTFIT_KEY);
+      var raw = localStorage.getItem(outfitKey());
       if (raw) {
         var saved = JSON.parse(raw);
         SLOTS.forEach(function (s) {
@@ -575,12 +597,14 @@
     } catch (e) { /* keep defaults */ }
   }
   function saveOutfit() {
-    try { localStorage.setItem(OUTFIT_KEY, JSON.stringify(outfit)); } catch (e) { /* ignore */ }
+    try { localStorage.setItem(outfitKey(), JSON.stringify(outfit)); } catch (e) { /* ignore */ }
   }
 
   /* ---------------- Data load ---------------- */
   function refreshItems() {
     return dbAll().then(function (rows) {
+      // Records saved before profiles existed belong to "me".
+      rows = rows.filter(function (r) { return (r.profile || "me") === profile; });
       rows.sort(function (a, b) { return b.createdAt - a.createdAt; });
       items = rows.map(function (r) {
         return { id: r.id, name: r.name, category: r.category, createdAt: r.createdAt };
@@ -620,6 +644,22 @@
   }
   $("tabCloset").addEventListener("click", function () { showTab("closet"); });
   $("tabTryon").addEventListener("click", function () { showTab("tryon"); });
+
+  function setProfile(p) {
+    if (profile === p) return;
+    profile = p;
+    filter = "All";
+    $("profMe").classList.toggle("active", p === "me");
+    $("profWife").classList.toggle("active", p === "wife");
+    $("closetTitle").textContent = closetTitle();
+    loadOutfit();
+    refreshItems().then(function () {
+      renderAll();
+      toast(p === "wife" ? "Showing your wife's closet." : "Showing your closet.");
+    });
+  }
+  $("profMe").addEventListener("click", function () { setProfile("me"); });
+  $("profWife").addEventListener("click", function () { setProfile("wife"); });
 
   /* ---------------- Closet view ---------------- */
   function renderChips() {
@@ -710,7 +750,7 @@
     delBtn.textContent = "Delete";
     delBtn.addEventListener("click", function () {
       var label = it.name || it.category;
-      if (!window.confirm("Delete \"" + label + "\" from your closet?")) return;
+      if (!window.confirm("Delete \"" + label + "\" from " + closetPronoun() + " closet?")) return;
       dbDel(it.id).then(function () {
         return refreshItems();
       }).then(function () {
@@ -761,20 +801,24 @@
     var list = filter === "All" ? items : items.filter(function (it) { return it.category === filter; });
 
     if (items.length === 0) {
+      var whose = profile === "wife" ? "Her closet is empty" : "Your closet is empty";
+      var where = profile === "wife"
+        ? "This is where her clothes will live once you add them."
+        : "This is where your clothes will live once you add them.";
       wrap.appendChild(emptyHtml(
-        "Your closet is empty",
+        whose,
         [
-          "This is where your clothes will live once you add them.",
-          "Tap the button below, or the + Add photo button up top, to photograph your first item. One photo per item works best, on a plain background."
+          where,
+          "Tap the button below, or the + Add photo button up top, to photograph the first item. One photo per item works best, on a plain background."
         ],
-        "+ Add your first photo"
+        "+ Add the first photo"
       ));
       return;
     }
     if (list.length === 0) {
       wrap.appendChild(emptyHtml(
         "Nothing in " + filter + " yet",
-        ["You have not added any " + filter.toLowerCase() + " so far.", "Tap below to photograph one."],
+        ["No " + filter.toLowerCase() + " in " + closetPronoun() + " closet so far.", "Tap below to photograph one."],
         "+ Add " + filter.toLowerCase()
       ));
       return;
@@ -854,7 +898,7 @@
     var p = pending[pendingIdx];
     if (!p) { closeAssignModal(); renderAll(); return; }
     var name = $("assignName").value.trim();
-    var rec = { name: name, category: pendingCat, blob: p.file, createdAt: Date.now() };
+    var rec = { name: name, category: pendingCat, profile: profile, blob: p.file, createdAt: Date.now() };
     dbAdd(rec).then(function () {
       URL.revokeObjectURL(p.url);
       pendingIdx++;
@@ -865,7 +909,7 @@
         $("assignModal").classList.remove("open");
         return refreshItems().then(function () {
           renderAll();
-          toast("Item saved to your closet.");
+          toast("Item saved to " + closetPronoun() + " closet.");
         });
       }
     }).catch(function () { toast("Could not save that photo."); });
@@ -897,8 +941,8 @@
       wrap.appendChild(emptyHtml(
         "Nothing to try on yet",
         [
-          "Your closet is empty, so there is nothing to preview.",
-          "Add photos of your clothes in the Closet tab first, then come back here to mix and match outfits."
+          (profile === "wife" ? "Her" : "Your") + " closet is empty, so there is nothing to preview.",
+          "Add photos of " + (profile === "wife" ? "her" : "your") + " clothes in the Closet tab first, then come back here to mix and match outfits."
         ],
         "+ Add photos"
       ));

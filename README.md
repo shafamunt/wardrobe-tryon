@@ -22,7 +22,7 @@ open wardrobe.html
 
 Or double-click `wardrobe.html` in your file manager. Everything (CSS, JS, the mannequin SVG) is inlined in that one file.
 
-Hosted artifact link: TBD (coordinator fills in after build)
+Hosted artifact slug: `wardrobe-try-on` (web_static). Open and share it from its artifact card in Muse.
 
 ## Continuing this work
 

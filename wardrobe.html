@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Closet - Wardrobe Try-On</title>
+<style>
+  :root {
+    --bg: #f6f7f9;
+    --card: #ffffff;
+    --ink: #1f2430;
+    --muted: #6b7280;
+    --line: #e5e7eb;
+    --accent: #2563eb;
+    --accent-soft: #eff4ff;
+    --danger: #dc2626;
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+  }
+  header {
+    background: var(--card);
+    border-bottom: 1px solid var(--line);
+    padding: 14px 16px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .header-row {
+    max-width: 980px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .header-row h1 {
+    font-size: 20px;
+    margin: 0;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+  }
+  .header-row .sub {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .spacer { flex: 1; }
+  .btn {
+    border: 1px solid var(--line);
+    background: var(--card);
+    color: var(--ink);
+    border-radius: 10px;
+    padding: 9px 14px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .btn:active { transform: translateY(1px); }
+  .btn.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+  .btn.danger { color: var(--danger); border-color: #f3c2c2; }
+  .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  nav.tabs {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 12px 16px 0;
+    display: flex;
+    gap: 8px;
+  }
+  .tab {
+    border: 1px solid var(--line);
+    background: var(--card);
+    border-radius: 999px;
+    padding: 8px 18px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+  }
+  .tab.active {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: #fff;
+  }
+  main {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 16px;
+  }
+  .chips {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+  .chip {
+    border: 1px solid var(--line);
+    background: var(--card);
+    border-radius: 999px;
+    padding: 7px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+  }
+  .chip.active {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .card img {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    background: #eceff3;
+    display: block;
+  }
+  .card-body { padding: 8px 10px 10px; }
+  .card-name {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0 0 2px;
+    word-break: break-word;
+  }
+  .card-cat {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .card-actions {
+    display: flex;
+    gap: 6px;
+  }
+  .mini-btn {
+    border: 1px solid var(--line);
+    background: #fff;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 10px;
+    cursor: pointer;
+    color: var(--muted);
+  }
+  .mini-btn.delete { color: var(--danger); }
+  .name-input {
+    width: 100%;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 4px 6px;
+    border: 1px solid var(--accent);
+    border-radius: 6px;
+    margin-bottom: 2px;
+  }
+  .empty {
+    border: 2px dashed var(--line);
+    border-radius: var(--radius);
+    background: var(--card);
+    padding: 40px 24px;
+    text-align: center;
+    color: var(--muted);
+  }
+  .empty h2 {
+    color: var(--ink);
+    font-size: 18px;
+    margin: 0 0 8px;
+  }
+  .empty p {
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 0 0 16px;
+    max-width: 420px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .privacy-note {
+    font-size: 12px;
+    color: var(--muted);
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+  /* Try-on layout */
+  .tryon {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  @media (min-width: 720px) {
+    .tryon { grid-template-columns: 320px 1fr; align-items: start; }
+  }
+  .mannequin-card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 16px;
+    text-align: center;
+  }
+  .mannequin-card svg { max-width: 100%; height: auto; }
+  .summary {
+    text-align: left;
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.9;
+  }
+  .summary strong { color: var(--ink); }
+  .slots { display: flex; flex-direction: column; gap: 10px; }
+  .slot {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+  }
+  .slot-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .slot-label { font-weight: 700; font-size: 14px; }
+  .slot select {
+    flex: 1;
+    font-size: 14px;
+    padding: 8px 10px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #fff;
+    max-width: 100%;
+  }
+  .slot-thumb {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 8px;
+  }
+  .slot-thumb img {
+    width: 56px;
+    height: 56px;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: #eceff3;
+  }
+  .slot-thumb .name { font-size: 13px; font-weight: 600; }
+  .slot-thumb .cat { font-size: 12px; color: var(--muted); }
+  .slot-empty-note { font-size: 13px; color: var(--muted); margin-top: 6px; }
+  .clear-link {
+    background: none;
+    border: none;
+    color: var(--danger);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+    margin-left: auto;
+  }
+  .ai-row { margin-top: 14px; text-align: center; }
+  /* Modal */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 20, 30, 0.55);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    z-index: 50;
+  }
+  .modal-backdrop.open { display: flex; }
+  .modal {
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px;
+    max-width: 420px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .modal h2 { margin: 0 0 4px; font-size: 18px; }
+  .modal .step { font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+  .modal img.preview {
+    width: 100%;
+    max-height: 240px;
+    object-fit: contain;
+    border-radius: 10px;
+    background: #eceff3;
+    margin-bottom: 12px;
+    display: block;
+  }
+  .modal .field-label { font-size: 13px; font-weight: 700; margin: 10px 0 6px; }
+  .modal .cat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .cat-btn {
+    border: 1px solid var(--line);
+    background: #fff;
+    border-radius: 10px;
+    padding: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--muted);
+  }
+  .cat-btn.selected {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+  .modal input[type="text"] {
+    width: 100%;
+    font-size: 14px;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+  }
+  .modal-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+  }
+  .modal-actions .btn { flex: 1; }
+  /* Toast */
+  #toast {
+    position: fixed;
+    left: 50%;
+    bottom: 24px;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--ink);
+    color: #fff;
+    font-size: 14px;
+    padding: 12px 20px;
+    border-radius: 999px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s, transform 0.25s;
+    z-index: 100;
+    max-width: 90vw;
+    text-align: center;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  footer {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 8px 16px 32px;
+    font-size: 12px;
+    color: var(--muted);
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-row">
+    <div>
+      <h1>My Closet</h1>
+      <div class="sub" id="itemCount">0 items</div>
+    </div>
+    <div class="spacer"></div>
+    <button class="btn primary" id="uploadBtn" type="button">+ Add photo</button>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button class="tab active" id="tabCloset" type="button">Closet</button>
+  <button class="tab" id="tabTryon" type="button">Try-On</button>
+</nav>
+
+<main>
+  <!-- CLOSET VIEW -->
+  <section id="viewCloset">
+    <div class="privacy-note">
+      Photos stay on this device. They are saved in your browser's local storage (IndexedDB) and are never uploaded anywhere. No sample items are included, so your closet starts empty.
+    </div>
+    <div class="chips" id="filterChips"></div>
+    <div id="closetContent"></div>
+  </section>
+
+  <!-- TRY-ON VIEW -->
+  <section id="viewTryon" hidden>
+    <div class="tryon">
+      <div class="mannequin-card">
+        <svg viewBox="0 0 200 380" role="img" aria-label="Neutral mannequin silhouette">
+          <circle cx="100" cy="36" r="24" fill="#dfe4ea" stroke="#aab3bf" stroke-width="2"/>
+          <rect x="88" y="58" width="24" height="16" rx="6" fill="#dfe4ea" stroke="#aab3bf" stroke-width="2"/>
+          <rect x="70" y="74" width="60" height="118" rx="24" fill="#e7ebf0" stroke="#aab3bf" stroke-width="2"/>
+          <rect x="42" y="80" width="20" height="104" rx="10" fill="#dfe4ea" stroke="#aab3bf" stroke-width="2"/>
+          <rect x="138" y="80" width="20" height="104" rx="10" fill="#dfe4ea" stroke="#aab3bf" stroke-width="2"/>
+          <rect x="74" y="196" width="22" height="118" rx="10" fill="#e7ebf0" stroke="#aab3bf" stroke-width="2"/>
+          <rect x="104" y="196" width="22" height="118" rx="10" fill="#e7ebf0" stroke="#aab3bf" stroke-width="2"/>
+          <rect x="70" y="318" width="28" height="14" rx="7" fill="#dfe4ea" stroke="#aab3bf" stroke-width="2"/>
+          <rect x="102" y="318" width="28" height="14" rx="7" fill="#dfe4ea" stroke="#aab3bf" stroke-width="2"/>
+        </svg>
+        <div class="summary" id="outfitSummary"></div>
+      </div>
+      <div>
+        <div class="slots" id="slotList"></div>
+        <div style="margin-top:12px; display:flex; gap:8px;">
+          <button class="btn" id="clearOutfitBtn" type="button">Clear outfit</button>
+        </div>
+        <div class="ai-row">
+          <button class="btn" type="button" disabled title="The AI garment swap will be added later, once your photos exist.">AI try-on (coming soon)</button>
+          <p style="font-size:12px; color:var(--muted); margin-top:8px; line-height:1.5;">
+            The AI garment swap arrives later, once you have added photos of your own clothes.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  Built as a local-first shell. Your photos and outfit picks never leave this browser.
+</footer>
+
+<!-- Upload flow modal -->
+<div class="modal-backdrop" id="assignModal">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="assignTitle">
+    <h2 id="assignTitle">Label your photo</h2>
+    <div class="step" id="assignStep">Photo 1 of 1</div>
+    <img class="preview" id="assignPreview" alt="Uploaded clothing photo">
+    <div class="field-label">Category</div>
+    <div class="cat-grid" id="assignCats"></div>
+    <div class="field-label">Name (optional)</div>
+    <input type="text" id="assignName" placeholder="e.g. Blue button-down shirt" maxlength="60">
+    <div class="modal-actions">
+      <button class="btn" id="assignSkip" type="button">Skip</button>
+      <button class="btn primary" id="assignSave" type="button">Save item</button>
+    </div>
+    <div style="margin-top:10px; text-align:center;">
+      <button class="btn" id="assignCancel" type="button" style="border:none; color:var(--muted);">Cancel remaining</button>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="fileInput" accept="image/*" multiple hidden>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  var CATS = ["Tops", "Bottoms", "Dresses", "Outerwear", "Shoes", "Accessories"];
+  var SLOTS = [
+    { key: "dress",     label: "Dress",     cat: "Dresses" },
+    { key: "top",       label: "Top",       cat: "Tops" },
+    { key: "bottom",    label: "Bottom",    cat: "Bottoms" },
+    { key: "outerwear", label: "Outerwear", cat: "Outerwear" },
+    { key: "shoes",     label: "Shoes",     cat: "Shoes" },
+    { key: "accessory", label: "Accessory", cat: "Accessories" }
+  ];
+  var OUTFIT_KEY = "wardrobe-outfit-v1";
+  var DB_NAME = "wardrobe-db";
+  var STORE = "items";
+
+  var items = [];            // [{id, name, category, createdAt}]  (blobs kept in DB)
+  var urlCache = {};         // id -> object URL
+  var outfit = {};           // slotKey -> item id or null
+  var filter = "All";
+  var pending = [];          // [{file, url}] awaiting category assignment
+  var pendingIdx = 0;
+  var pendingCat = "Tops";
+
+  function $(id) { return document.getElementById(id); }
+
+  /* ---------------- Toast ---------------- */
+  var toastTimer = null;
+  function toast(msg) {
+    var t = $("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.remove("show"); }, 2600);
+  }
+
+  /* ---------------- IndexedDB ---------------- */
+  var db = null;
+  function openDb() {
+    return new Promise(function (resolve, reject) {
+      var req = indexedDB.open(DB_NAME, 1);
+      req.onupgradeneeded = function () {
+        var d = req.result;
+        if (!d.objectStoreNames.contains(STORE)) {
+          d.createObjectStore(STORE, { keyPath: "id", autoIncrement: true });
+        }
+      };
+      req.onsuccess = function () { db = req.result; resolve(db); };
+      req.onerror = function () { reject(req.error); };
+    });
+  }
+  function dbAll() {
+    return new Promise(function (resolve, reject) {
+      var tx = db.transaction(STORE, "readonly");
+      var req = tx.objectStore(STORE).getAll();
+      req.onsuccess = function () { resolve(req.result || []); };
+      req.onerror = function () { reject(req.error); };
+    });
+  }
+  function dbAdd(record) {
+    return new Promise(function (resolve, reject) {
+      var tx = db.transaction(STORE, "readwrite");
+      var req = tx.objectStore(STORE).add(record);
+      req.onsuccess = function () { resolve(req.result); };
+      req.onerror = function () { reject(req.error); };
+    });
+  }
+  function dbPut(record) {
+    return new Promise(function (resolve, reject) {
+      var tx = db.transaction(STORE, "readwrite");
+      var req = tx.objectStore(STORE).put(record);
+      req.onsuccess = function () { resolve(); };
+      req.onerror = function () { reject(req.error); };
+    });
+  }
+  function dbDel(id) {
+    return new Promise(function (resolve, reject) {
+      var tx = db.transaction(STORE, "readwrite");
+      var req = tx.objectStore(STORE).delete(id);
+      req.onsuccess = function () { resolve(); };
+      req.onerror = function () { reject(req.error); };
+    });
+  }
+  function dbGet(id) {
+    return new Promise(function (resolve, reject) {
+      var tx = db.transaction(STORE, "readonly");
+      var req = tx.objectStore(STORE).get(id);
+      req.onsuccess = function () { resolve(req.result); };
+      req.onerror = function () { reject(req.error); };
+    });
+  }
+
+  /* ---------------- Outfit (localStorage) ---------------- */
+  function loadOutfit() {
+    outfit = {};
+    SLOTS.forEach(function (s) { outfit[s.key] = null; });
+    try {
+      var raw = localStorage.getItem(OUTFIT_KEY);
+      if (raw) {
+        var saved = JSON.parse(raw);
+        SLOTS.forEach(function (s) {
+          if (saved && saved[s.key] != null) outfit[s.key] = saved[s.key];
+        });
+      }
+    } catch (e) { /* keep defaults */ }
+  }
+  function saveOutfit() {
+    try { localStorage.setItem(OUTFIT_KEY, JSON.stringify(outfit)); } catch (e) { /* ignore */ }
+  }
+
+  /* ---------------- Data load ---------------- */
+  function refreshItems() {
+    return dbAll().then(function (rows) {
+      rows.sort(function (a, b) { return b.createdAt - a.createdAt; });
+      items = rows.map(function (r) {
+        return { id: r.id, name: r.name, category: r.category, createdAt: r.createdAt };
+      });
+      // Build / rebuild object URLs
+      var seen = {};
+      var jobs = rows.map(function (r) {
+        seen[r.id] = true;
+        if (!urlCache[r.id] && r.blob) urlCache[r.id] = URL.createObjectURL(r.blob);
+      });
+      Object.keys(urlCache).forEach(function (id) {
+        if (!seen[id]) { URL.revokeObjectURL(urlCache[id]); delete urlCache[id]; }
+      });
+      // Drop outfit picks that no longer exist
+      var ids = {};
+      items.forEach(function (it) { ids[it.id] = true; });
+      var changed = false;
+      SLOTS.forEach(function (s) {
+        if (outfit[s.key] != null && !ids[outfit[s.key]]) { outfit[s.key] = null; changed = true; }
+      });
+      if (changed) saveOutfit();
+    });
+  }
+
+  function findItem(id) {
+    for (var i = 0; i < items.length; i++) if (items[i].id === id) return items[i];
+    return null;
+  }
+
+  /* ---------------- Tabs ---------------- */
+  function showTab(which) {
+    $("tabCloset").classList.toggle("active", which === "closet");
+    $("tabTryon").classList.toggle("active", which === "tryon");
+    $("viewCloset").hidden = which !== "closet";
+    $("viewTryon").hidden = which !== "tryon";
+    if (which === "tryon") renderTryon();
+  }
+  $("tabCloset").addEventListener("click", function () { showTab("closet"); });
+  $("tabTryon").addEventListener("click", function () { showTab("tryon"); });
+
+  /* ---------------- Closet view ---------------- */
+  function renderChips() {
+    var wrap = $("filterChips");
+    wrap.innerHTML = "";
+    var names = ["All"].concat(CATS);
+    names.forEach(function (name) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "chip" + (filter === name ? " active" : "");
+      var count = name === "All" ? items.length
+        : items.filter(function (it) { return it.category === name; }).length;
+      b.textContent = name + " (" + count + ")";
+      b.addEventListener("click", function () {
+        filter = name;
+        renderChips();
+        renderCloset();
+      });
+      wrap.appendChild(b);
+    });
+  }
+
+  function itemCard(it) {
+    var card = document.createElement("div");
+    card.className = "card";
+
+    var img = document.createElement("img");
+    img.alt = it.name || it.category;
+    img.src = urlCache[it.id] || "";
+    card.appendChild(img);
+
+    var body = document.createElement("div");
+    body.className = "card-body";
+
+    var nameEl = document.createElement("p");
+    nameEl.className = "card-name";
+    nameEl.textContent = it.name || "(unnamed)";
+    body.appendChild(nameEl);
+
+    var catEl = document.createElement("div");
+    catEl.className = "card-cat";
+    catEl.textContent = it.category;
+    body.appendChild(catEl);
+
+    var actions = document.createElement("div");
+    actions.className = "card-actions";
+
+    var editBtn = document.createElement("button");
+    editBtn.type = "button";
+    editBtn.className = "mini-btn";
+    editBtn.textContent = "Rename";
+    editBtn.addEventListener("click", function () {
+      var input = document.createElement("input");
+      input.className = "name-input";
+      input.type = "text";
+      input.value = it.name || "";
+      input.maxLength = 60;
+      body.replaceChild(input, nameEl);
+      input.focus();
+      input.select();
+      var done = false;
+      function commit(save) {
+        if (done) return;
+        done = true;
+        if (save) {
+          var v = input.value.trim();
+          renameItem(it.id, v).then(function () {
+            it.name = v;
+            nameEl.textContent = v || "(unnamed)";
+            body.replaceChild(nameEl, input);
+            renderTryonSummaryOnly();
+          });
+        } else {
+          body.replaceChild(nameEl, input);
+        }
+      }
+      input.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") commit(true);
+        if (e.key === "Escape") commit(false);
+      });
+      input.addEventListener("blur", function () { commit(true); });
+    });
+    actions.appendChild(editBtn);
+
+    var delBtn = document.createElement("button");
+    delBtn.type = "button";
+    delBtn.className = "mini-btn delete";
+    delBtn.textContent = "Delete";
+    delBtn.addEventListener("click", function () {
+      var label = it.name || it.category;
+      if (!window.confirm("Delete \"" + label + "\" from your closet?")) return;
+      dbDel(it.id).then(function () {
+        return refreshItems();
+      }).then(function () {
+        renderAll();
+        toast("Deleted.");
+      }).catch(function () { toast("Could not delete that item."); });
+    });
+    actions.appendChild(delBtn);
+
+    body.appendChild(actions);
+    card.appendChild(body);
+    return card;
+  }
+
+  function renameItem(id, name) {
+    return dbGet(id).then(function (rec) {
+      if (!rec) return;
+      rec.name = name;
+      return dbPut(rec);
+    });
+  }
+
+  function emptyHtml(title, lines, btnLabel) {
+    var div = document.createElement("div");
+    div.className = "empty";
+    var h = document.createElement("h2");
+    h.textContent = title;
+    div.appendChild(h);
+    lines.forEach(function (ln) {
+      var p = document.createElement("p");
+      p.textContent = ln;
+      div.appendChild(p);
+    });
+    if (btnLabel) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "btn primary";
+      b.textContent = btnLabel;
+      b.addEventListener("click", function () { $("fileInput").click(); });
+      div.appendChild(b);
+    }
+    return div;
+  }
+
+  function renderCloset() {
+    var wrap = $("closetContent");
+    wrap.innerHTML = "";
+    var list = filter === "All" ? items : items.filter(function (it) { return it.category === filter; });
+
+    if (items.length === 0) {
+      wrap.appendChild(emptyHtml(
+        "Your closet is empty",
+        [
+          "This is where your clothes will live once you add them.",
+          "Tap the button below, or the + Add photo button up top, to photograph your first item. One photo per item works best, on a plain background."
+        ],
+        "+ Add your first photo"
+      ));
+      return;
+    }
+    if (list.length === 0) {
+      wrap.appendChild(emptyHtml(
+        "Nothing in " + filter + " yet",
+        ["You have not added any " + filter.toLowerCase() + " so far.", "Tap below to photograph one."],
+        "+ Add " + filter.toLowerCase()
+      ));
+      return;
+    }
+    var grid = document.createElement("div");
+    grid.className = "grid";
+    list.forEach(function (it) { grid.appendChild(itemCard(it)); });
+    wrap.appendChild(grid);
+  }
+
+  function updateCount() {
+    $("itemCount").textContent = items.length + (items.length === 1 ? " item" : " items");
+  }
+
+  function renderAll() {
+    updateCount();
+    renderChips();
+    renderCloset();
+    renderTryonSummaryOnly();
+  }
+
+  /* ---------------- Upload flow ---------------- */
+  $("uploadBtn").addEventListener("click", function () { $("fileInput").click(); });
+  $("fileInput").addEventListener("change", function () {
+    var files = Array.prototype.slice.call($("fileInput").files || []);
+    $("fileInput").value = "";
+    files = files.filter(function (f) { return f.type && f.type.indexOf("image/") === 0; });
+    if (files.length === 0) { toast("No image files selected."); return; }
+    pending = files.map(function (f) {
+      return { file: f, url: URL.createObjectURL(f) };
+    });
+    pendingIdx = 0;
+    openAssignModal();
+  });
+
+  function openAssignModal() {
+    buildCatButtons();
+    showPending();
+    $("assignModal").classList.add("open");
+  }
+  function closeAssignModal() {
+    pending.forEach(function (p, i) { if (i >= pendingIdx) URL.revokeObjectURL(p.url); });
+    pending = [];
+    $("assignModal").classList.remove("open");
+  }
+  function buildCatButtons() {
+    var wrap = $("assignCats");
+    wrap.innerHTML = "";
+    pendingCat = "Tops";
+    CATS.forEach(function (c) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "cat-btn" + (c === pendingCat ? " selected" : "");
+      b.textContent = c;
+      b.addEventListener("click", function () {
+        pendingCat = c;
+        Array.prototype.forEach.call(wrap.children, function (el) { el.classList.remove("selected"); });
+        b.classList.add("selected");
+      });
+      wrap.appendChild(b);
+    });
+  }
+  function showPending() {
+    var p = pending[pendingIdx];
+    if (!p) { closeAssignModal(); renderAll(); return; }
+    $("assignStep").textContent = "Photo " + (pendingIdx + 1) + " of " + pending.length;
+    $("assignPreview").src = p.url;
+    var base = p.file.name.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ").trim();
+    $("assignName").value = base.length > 40 ? "" : base;
+    pendingCat = "Tops";
+    var wrap = $("assignCats");
+    Array.prototype.forEach.call(wrap.children, function (el, i) {
+      el.classList.toggle("selected", CATS[i] === pendingCat);
+    });
+  }
+  function savePending() {
+    var p = pending[pendingIdx];
+    if (!p) { closeAssignModal(); renderAll(); return; }
+    var name = $("assignName").value.trim();
+    var rec = { name: name, category: pendingCat, blob: p.file, createdAt: Date.now() };
+    dbAdd(rec).then(function () {
+      URL.revokeObjectURL(p.url);
+      pendingIdx++;
+      if (pendingIdx < pending.length) {
+        showPending();
+      } else {
+        pending = [];
+        $("assignModal").classList.remove("open");
+        return refreshItems().then(function () {
+          renderAll();
+          toast("Item saved to your closet.");
+        });
+      }
+    }).catch(function () { toast("Could not save that photo."); });
+  }
+  $("assignSave").addEventListener("click", savePending);
+  $("assignSkip").addEventListener("click", function () {
+    var p = pending[pendingIdx];
+    if (p) URL.revokeObjectURL(p.url);
+    pendingIdx++;
+    if (pendingIdx < pending.length) showPending();
+    else { pending = []; $("assignModal").classList.remove("open"); refreshItems().then(renderAll); }
+  });
+  $("assignCancel").addEventListener("click", function () {
+    closeAssignModal();
+    refreshItems().then(renderAll);
+  });
+
+  /* ---------------- Try-on view ---------------- */
+  function renderTryon() {
+    renderSlots();
+    renderTryonSummaryOnly();
+  }
+
+  function renderSlots() {
+    var wrap = $("slotList");
+    wrap.innerHTML = "";
+
+    if (items.length === 0) {
+      wrap.appendChild(emptyHtml(
+        "Nothing to try on yet",
+        [
+          "Your closet is empty, so there is nothing to preview.",
+          "Add photos of your clothes in the Closet tab first, then come back here to mix and match outfits."
+        ],
+        "+ Add photos"
+      ));
+      var goBtn = wrap.querySelector(".btn");
+      if (goBtn) goBtn.addEventListener("click", function () { showTab("closet"); }, { once: true });
+      return;
+    }
+
+    SLOTS.forEach(function (slot) {
+      var options = items.filter(function (it) { return it.category === slot.cat; });
+      var box = document.createElement("div");
+      box.className = "slot";
+
+      var top = document.createElement("div");
+      top.className = "slot-top";
+      var label = document.createElement("span");
+      label.className = "slot-label";
+      label.textContent = slot.label;
+      top.appendChild(label);
+
+      var sel = document.createElement("select");
+      sel.setAttribute("aria-label", "Choose " + slot.label.toLowerCase());
+      var none = document.createElement("option");
+      none.value = "";
+      none.textContent = options.length === 0 ? "No " + slot.cat.toLowerCase() + " yet" : "Choose...";
+      sel.appendChild(none);
+      options.forEach(function (it) {
+        var o = document.createElement("option");
+        o.value = String(it.id);
+        o.textContent = it.name || "(unnamed)";
+        sel.appendChild(o);
+      });
+      if (outfit[slot.key] != null) sel.value = String(outfit[slot.key]);
+      if (options.length === 0) sel.disabled = true;
+
+      sel.addEventListener("change", function () {
+        var v = sel.value === "" ? null : Number(sel.value);
+        outfit[slot.key] = v;
+        // A dress replaces top and bottom; picking a top or bottom clears the dress.
+        if (slot.key === "dress" && v != null) {
+          outfit.top = null;
+          outfit.bottom = null;
+        } else if ((slot.key === "top" || slot.key === "bottom") && v != null) {
+          outfit.dress = null;
+        }
+        saveOutfit();
+        renderSlots();
+        renderTryonSummaryOnly();
+      });
+      top.appendChild(sel);
+
+      if (outfit[slot.key] != null) {
+        var clr = document.createElement("button");
+        clr.type = "button";
+        clr.className = "clear-link";
+        clr.textContent = "Clear";
+        clr.addEventListener("click", function () {
+          outfit[slot.key] = null;
+          saveOutfit();
+          renderSlots();
+          renderTryonSummaryOnly();
+        });
+        top.appendChild(clr);
+      }
+      box.appendChild(top);
+
+      var chosen = outfit[slot.key] != null ? findItem(outfit[slot.key]) : null;
+      if (chosen && chosen.category === slot.cat) {
+        var row = document.createElement("div");
+        row.className = "slot-thumb";
+        var im = document.createElement("img");
+        im.alt = chosen.name || slot.label;
+        im.src = urlCache[chosen.id] || "";
+        row.appendChild(im);
+        var meta = document.createElement("div");
+        var nm = document.createElement("div");
+        nm.className = "name";
+        nm.textContent = chosen.name || "(unnamed)";
+        var ct = document.createElement("div");
+        ct.className = "cat";
+        ct.textContent = chosen.category;
+        meta.appendChild(nm);
+        meta.appendChild(ct);
+        row.appendChild(meta);
+        box.appendChild(row);
+      } else if (options.length > 0) {
+        var note = document.createElement("div");
+        note.className = "slot-empty-note";
+        note.textContent = slot.label + ": empty. Pick one from the list above.";
+        box.appendChild(note);
+      } else {
+        var note2 = document.createElement("div");
+        note2.className = "slot-empty-note";
+        note2.textContent = "Add " + slot.cat.toLowerCase() + " in the Closet tab to unlock this slot.";
+        box.appendChild(note2);
+      }
+
+      wrap.appendChild(box);
+    });
+  }
+
+  function renderTryonSummaryOnly() {
+    var el = $("outfitSummary");
+    if (!el) return;
+    el.innerHTML = "";
+    SLOTS.forEach(function (slot) {
+      var chosen = outfit[slot.key] != null ? findItem(outfit[slot.key]) : null;
+      var row = document.createElement("div");
+      var label = document.createElement("strong");
+      label.textContent = slot.label + ": ";
+      row.appendChild(label);
+      row.appendChild(document.createTextNode(
+        (chosen && chosen.category === slot.cat) ? (chosen.name || "(unnamed)") : "empty"
+      ));
+      el.appendChild(row);
+    });
+  }
+
+  $("clearOutfitBtn").addEventListener("click", function () {
+    SLOTS.forEach(function (s) { outfit[s.key] = null; });
+    saveOutfit();
+    renderSlots();
+    renderTryonSummaryOnly();
+    toast("Outfit cleared.");
+  });
+
+  /* ---------------- Init ---------------- */
+  if (!("indexedDB" in window)) {
+    document.querySelector("main").insertAdjacentHTML("afterbegin",
+      '<div class="privacy-note">Your browser does not support IndexedDB, so photos cannot be saved on this device. The app will still let you browse the layout.</div>');
+  }
+  openDb()
+    .then(function () { loadOutfit(); return refreshItems(); })
+    .then(function () { renderAll(); })
+    .catch(function () {
+      toast("Storage is unavailable in this browser.");
+      renderAll();
+    });
+})();
+</script>
+</body>
+</html>

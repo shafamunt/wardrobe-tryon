@@ -9,6 +9,7 @@ A mobile-friendly, local-first closet and outfit preview app for Shafayet (Proje
 - Rename items and delete them.
 - Build outfits in the Try-On tab by picking one item per slot over a neutral mannequin silhouette.
 - An "AI try-on (coming soon)" button is present but disabled. The AI garment swap comes later, once real photos exist.
+- Two closets: "My closet" and "Wife's closet." A profile switcher in the header flips between them; each closet has its own photos and its own saved outfit picks. Items are tagged with a `profile` field in IndexedDB, and outfits live under per-profile localStorage keys (`wardrobe-outfit-v1-me`, `wardrobe-outfit-v1-wife`). Records saved before profiles existed are treated as "me".
 
 The app ships with zero sample inventory. Every empty view explains what to add and how.
 
